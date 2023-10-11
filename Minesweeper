@@ -1,0 +1,343 @@
+#include <stdio.h>
+
+void beginner(void);
+void intermediate(void);
+void expert(void);
+void custom(void);
+void minefield_generator(void);
+void print_minefield(void);
+void guess(void);
+void print_final_minefield(void);
+int left_click(int x, int y);
+void win(void);
+void go(void);
+void lose(void);
+int check(void);
+
+int remain = 0;
+int M, N;
+int times = 0;
+int total_mines = 0;
+char minefield[35][35];                                      //This 2-D array contains all of the mines, numbers and blank spaces
+char blank_minefield[35][35];                                //to operate
+
+int main()
+{
+    int diff = 0;
+    scanf("%d\n", &diff);
+    if (diff == 1)                                         //If, else if and else statements that each go to the respective difficulty
+    {
+        beginner();
+    }
+    else if (diff == 2)
+    {
+        intermediate();
+    }
+    else if (diff == 3)
+    {
+        expert();
+    }
+    else if (diff == 4)
+    {
+        custom();
+    }
+    return 0;
+}
+
+void beginner(void)                                       //Gives the minefield the 'beginner' grid and mines
+{
+    M = 9;
+    N = 9;
+    total_mines = 10;
+    remain = total_mines;
+    minefield_generator();
+    guess();
+}
+
+void intermediate(void)                                   //Gives the minefield the 'intermediate' grid and mines
+{
+    M = 16;
+    N = 16;
+    total_mines = 40;
+    remain = total_mines;
+    minefield_generator();
+    guess();
+}
+
+void expert(void)                                         //Gives the minefield the 'expert' grid size and mines
+{
+    M = 30;
+    N = 16;
+    total_mines = 99;
+    remain = total_mines;
+    minefield_generator();
+    guess();
+}
+
+void custom(void)
+{
+    M = 0;
+    N = 0;
+    total_mines = 0;
+    scanf("%d %d %d\n", &N, &M, &total_mines);
+    remain = total_mines;
+    minefield_generator();
+    guess();
+}
+
+void minefield_generator(void)                            //Function that generates the minefield
+{
+    int i = 0, j = 0;
+    for (i = 0; i < N; i++)//initialize the operator panel
+    {
+        for (j = 0; j < M; j++)
+        {
+            blank_minefield[i][j] = '.';
+        }
+    }
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < M + 1; j++)
+        {
+            scanf("%c", &minefield[i][j]);
+            if (minefield[i][j] != '*')
+            {
+                minefield[i][j] = '0';
+            }
+        }
+    }
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < M; j++)
+        {
+            int x, y;
+            if (minefield[i][j] == '*')
+            {
+                for (x = i - 1; x < i + 2; x++)
+                {
+                    for (y = j - 1; y < j + 2; y++)
+                    {
+                        if ((x >= 0) && (x < N) && (y >= 0) && (y < M) && (minefield[x][y] != '*'))
+                        {
+                            minefield[x][y]++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+void print_minefield(void)                         // This function prints the minefield per operation ,differ two fields
+{
+    int i, j;
+    for (i = 0; i < N; i++)                                          // Loop that prints out . * number in the minefield                         
+    {
+        for (j = 0; j < M; j++)
+        {
+            printf("%c", blank_minefield[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void guess(void)                                          //determine the result, output 
+{
+    int i = 0, j = 0, z , x , y ;
+    scanf("%d %d %d", &z, &x, &y);// Reading the input of each action and coordinate
+    x--;
+    y--;
+    //convert coordinates to corner marks
+    times++;//Record each input
+    if (z == 1)//Left_Click
+    {
+        left_click(x, y);
+        if (left_click(x, y) == -1)
+        {
+            lose();
+            return;
+        }
+    }
+    else if (z == 2)//Right_Mine
+    {
+        if ((blank_minefield[x][y] == '?') || (blank_minefield[x][y] == '.'))
+        {
+            blank_minefield[x][y] = '!';
+            remain--;
+        }
+    }
+    else if (z == 3)//Right_Question
+    {
+        if ((blank_minefield[x][y] == '!') || (blank_minefield[x][y] == '.'))
+        {
+            if (blank_minefield[x][y] == '!')
+            {
+                remain += 1;
+            }
+            blank_minefield[x][y] = '?';
+        }
+    }
+    else if (z == 4)//Right_Cancel
+    {
+        if ((blank_minefield[x][y] == '?') || (blank_minefield[x][y] == '!'))
+        {
+            if (blank_minefield[x][y] == '!')
+            {
+                remain += 1;
+            }
+            blank_minefield[x][y] = '.';
+        }
+    }
+    else if (z == 9)//Chording
+    {
+        int p, q, r, s;
+        r = 0;
+        s = 0;
+        if (minefield[x][y] == blank_minefield[x][y])
+        {
+            for (p = x - 1; p < x + 2; p++)
+            {
+                for (q = y - 1; q < y + 2; q++)
+                {
+                    if ((p >= 0) && (q >= 0) && (p < N) && (q < M))
+                    {
+                        if (blank_minefield[p][q] == '!')
+                        {
+                            r++;
+                        }
+                    }
+                }
+            }
+            if (r + 48 == blank_minefield[x][y])
+            {
+                for (p = x - 1; p < x + 2; p++)
+                {
+                    for (q = y - 1; q < y + 2; q++)
+                    {
+                        if ((p >= 0) && (q >= 0) && (p < N) && (q < M))
+                        {
+                            if (blank_minefield[p][q] != '!'&&minefield[p][q]=='*')
+                            {
+                                lose();
+                                return;
+                            }
+                        }
+                    }
+                }
+                    for (i = x - 1; i < x + 2; i++)
+                    {
+                        for (j = y - 1; j < y + 2; j++)
+                        {
+                            if ((i >= 0) && (j >= 0) && (i < N) && (j < M) && (blank_minefield[i][j] == '.'||blank_minefield[i][j] == '?') )
+                            {
+                                left_click(i, j);
+                            }
+                        }
+                    }
+            }
+        }
+    }
+    int w = check();
+    if (w == ((M * N) - total_mines))                 // If the user has cleared the minefield, then game over (win)
+    {
+        win();
+        return;
+    }
+    else 
+    {
+        go();
+    }
+}
+
+void print_final_minefield(void)                      // Prints the minefield, showing where all of the mines are placed
+{
+    int i = 0, j = 0;
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < M; j++)
+        {
+            if (minefield[i][j] == '*')
+            {
+                printf("*");
+            }
+            else
+            {
+                printf("%c", blank_minefield[i][j]);
+            }
+        }
+        
+        printf("\n");
+    }
+    
+}
+
+int left_click(int x, int y)
+{
+    if (!((x >= 0) && (x < N) && (y >= 0) && (y < M)))
+    {
+        return 0;
+    }
+    if (!(blank_minefield[x][y] == '?' || blank_minefield[x][y] == '.'))
+        return 0;
+    else
+    {
+        if (minefield[x][y] == '*')
+        {
+            return -1;
+        }
+        else if (minefield[x][y] != '0')
+        {
+            blank_minefield[x][y] = minefield[x][y];
+            return 1;
+        }
+        else
+        {
+            blank_minefield[x][y] = minefield[x][y];
+            int m, n;
+            for (m = x - 1; m < x + 2; m++)
+            {
+                for (n = y - 1; n < y + 2; n++)
+                {
+                    left_click(m, n);
+                }
+            }
+            return 1;
+        }
+    }
+}
+
+void win(void)
+{
+    printf("Game over, you win\n");
+    printf("%d %d\n", times, remain);
+    print_final_minefield();
+}
+
+void go(void)
+{
+    printf("Game in progress\n");
+    printf("%d %d\n", times, remain);
+    print_minefield();
+    guess();
+}
+
+void lose(void)
+{
+    printf("Hit mine, you lose\n");
+    printf("%d %d\n", times, remain);
+    print_final_minefield();
+}
+
+int check(void)
+{
+    int i, j, check;
+    check = 0;
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < M; j++)
+        {
+            if (blank_minefield[i][j] >= '0'&&blank_minefield[i][j] <= '8')
+                check++;
+        }
+    }
+    return check;
+}
