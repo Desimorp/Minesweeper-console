@@ -1,4 +1,4 @@
-扫扫扫雷雷雷
+扫雷
 Input file: standard input
 Output file: standard output
 Time limit: 1 second
